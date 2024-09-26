@@ -33,6 +33,7 @@ android {
 
 dependencies {
 
+    implementation ("androidx.lifecycle:lifecycle-viewmodel:2.6.1")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
