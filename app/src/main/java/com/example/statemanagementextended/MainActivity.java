@@ -5,37 +5,107 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.lifecycle.ViewModelProvider;
 public class MainActivity extends AppCompatActivity {
-    private static final String KEY_COUNT = "count"; // Klucz do przechowywania danych w Bundle
-    private TextView textViewCount; // Element widoku do wyświetlania liczby
-    private int count = 0; // Zmienna do przechowywania wartości licznika
+
+    private TextView textViewCount;
+    private Button buttonIncrement;
+    private EditText textEdit;
+    private CheckBox checkBox;
+    private TextView textCheckBox;
+    private Switch toggleSwitch;
+    private StateViewModel stateViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textViewCount = findViewById(R.id.textViewCount); // Inicjalizacja TextView
-        Button buttonIncrement = findViewById(R.id.buttonIncrement); // Inicjalizacja Button
-        // Odczyt danych ze stanu, jeśli istnieje
-        if (savedInstanceState != null) {
-            count = savedInstanceState.getInt(KEY_COUNT); // Przywróć wartość licznika
-        }
-        updateCountText(); // Aktualizuj widok TextView
-        // Ustawienie akcji kliknięcia przycisku
+
+        textViewCount = findViewById(R.id.textViewCount);
+        buttonIncrement = findViewById(R.id.buttonIncrement);
+        textEdit = findViewById(R.id.textEdit);
+        checkBox = findViewById(R.id.checkBox);
+        textCheckBox = findViewById(R.id.textCheckBox);
+        toggleSwitch = findViewById(R.id.toggleSwitch);
+
+        stateViewModel = new ViewModelProvider(this).get(StateViewModel.class);
+
+        updateCountText();
+        updateEditText();
+        updateCheckBox();
+        updateToggleSwitch();
+
         buttonIncrement.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                count++; // Zwiększ wartość licznika
-                updateCountText(); // Aktualizuj widok TextView
+            public void onClick(View view) {
+                stateViewModel.incrementCount();
+                updateCountText();
+            }
+        });
+        textEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                stateViewModel.setTextEditText(textEdit.toString());
+            }
+        });
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(checkBox.isChecked()) {
+                    stateViewModel.setChecked(true);
+                } else {
+                    stateViewModel.setChecked(false);
+                }
+                updateCheckBox();
+            }
+        });
+        toggleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(toggleSwitch.isChecked()) {
+                    stateViewModel.setSwitched(true);
+                } else {
+                    stateViewModel.setSwitched(false);
+                }
+                updateToggleSwitch();
             }
         });
     }
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(KEY_COUNT, count); // Zapisz aktualny stan licznika do Bundle
-    }
     private void updateCountText() {
-        textViewCount.setText("Licznik: " + count); // Ustaw tekst TextView na aktualną wartość licznika
-
+        textViewCount.setText("Licznik: " + stateViewModel.getCount());
+    }
+    private void updateEditText() {
+        textEdit.setText("" + stateViewModel.getTextEditText());
+    }
+    private void updateCheckBox() {
+        if(stateViewModel.getChecked()) {
+            textCheckBox.setText("Opcja zaznaczona");
+        } else {
+            textCheckBox.setText("");
+        }
+    }
+    private void updateToggleSwitch() {
+        if(stateViewModel.getSwitched()) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 }
